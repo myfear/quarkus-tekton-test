@@ -11,6 +11,13 @@ spec:
       type: string
       default: main
       description: The branch, tag, or commit to check out
+    - name: maven-image
+      type: string
+      default: maven:3.9.14-eclipse-temurin-21
+      description: The Maven container image to use for the build
+    - name: image
+      type: string
+      description: The destination image reference, e.g. registry.kube-system.svc.cluster.local:80/pipeline-demo:latest
   workspaces:
     - name: shared-source
       description: Shared workspace for source code
@@ -36,7 +43,21 @@ spec:
         - name: source
           workspace: shared-source
       params:
+        - name: maven-image
+          value: $(params.maven-image)
         - name: goals
           value:
             - package
             - -DskipTests
+
+    - name: build-and-push-image
+      runAfter:
+        - build-app
+      taskRef:
+        name: buildah-push
+      workspaces:
+        - name: source
+          workspace: shared-source
+      params:
+        - name: image
+          value: $(params.image)
