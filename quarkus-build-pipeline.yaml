@@ -1,0 +1,42 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: quarkus-build
+spec:
+  params:
+    - name: repo-url
+      type: string
+      description: The URL of the Git repository to clone
+    - name: revision
+      type: string
+      default: main
+      description: The branch, tag, or commit to check out
+  workspaces:
+    - name: shared-source
+      description: Shared workspace for source code
+  tasks:
+    - name: clone-source
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: shared-source
+      params:
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: $(params.revision)
+
+    - name: build-app
+      runAfter:
+        - clone-source
+      taskRef:
+        name: maven-build
+      workspaces:
+        - name: source
+          workspace: shared-source
+      params:
+        - name: goals
+          value:
+            - package
+            - -DskipTests

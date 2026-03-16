@@ -1,0 +1,16 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: quarkus-build-run-01
+spec:
+  pipelineRef:
+    name: quarkus-build
+  params:
+    - name: repo-url
+      value: https://github.com/YOUR_ORG/YOUR_REPO.git
+    - name: revision
+      value: main
+  workspaces:
+    - name: shared-source
+      persistentVolumeClaim:
+        claimName: pipeline-source-pvc
